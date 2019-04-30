@@ -47,30 +47,33 @@ for (var x = 0; x < 800; x += grid_x_space) {
 
 //creates random start and stop positions for the knight
 var source = nodelist[Math.floor((Math.random() * 99) + 1)]
+console.log(source.x_pos / 85);
+console.log(source.y_pos / 85);
 var sink = nodelist[Math.floor((Math.random() * 99) + 1)]
+console.log(sink.x_pos / 85);
+console.log(sink.y_pos / 85);
+
 //===============================================================================================================================
 function knightsMove() {
    
 }
-int solveKTUtil(int x, int y, int movei, int sol[N][N],
-    int xMove[], int yMove[]);
+//var solveKTUtil( x,  y, movei, sol,xMove, yMove);
 
 /* A utility function to check if i,j are valid indexes 
    for N*N chessboard */
-bool isSafe(int x, int y, int sol[N][N])
+function isSafe( x,  y, sol)
 {
-    return (x >= 0 && x < N && y >= 0 &&
-        y < N && sol[x][y] == -1);
+    return (x >= 0 && x < grid_N && y >= 0 &&
+        y < grid_N && sol[x][y] == -1);
 }
 
 /* A utility function to print solution matrix sol[N][N] */
-void printSolution(int sol[N][N])
+function printSolution(sol)
 {
-    for (int x = 0; x < N; x++)
+    for (var x = 0; x < grid_N; x++)
     {
-        for (int y = 0; y < N; y++)
-        printf(" %2d ", sol[x][y]);
-        printf("\n");
+        for (var y = 0; y < grid_N; y++)
+            console.log( sol[x][y]);
     }
 }
 
@@ -81,29 +84,22 @@ void printSolution(int sol[N][N])
    tour. 
    Please note that there may be more than one solutions, 
    this function prints one of the feasible solutions.  */
-bool solveKT()
+function solveKT()
 {
-    int sol[N][N];
-
-    /* Initialization of solution matrix */
-    for (int x = 0; x < N; x++)
-    for (int y = 0; y < N; y++)
-    sol[x][y] = -1;
+    var sol = knightsBoards;
 
     /* xMove[] and yMove[] define next move of Knight. 
        xMove[] is for next value of x coordinate 
        yMove[] is for next value of y coordinate */
-    int xMove[8] = { 2, 1, - 1, -2, -2, -1, 1, 2
-};
-int yMove[8] = { 1, 2, 2, 1, - 1, -2, -2, -1 };
-
+    var xMove = cx;
+    var yMove = cy;
 // Since the Knight is initially at the first block 
-sol[0][0] = 0;
+    sol[source.x_pos / 85][source.y_pos / 85] = 0;
 
 /* Start from 0,0 and explore all tours using 
    solveKTUtil() */
-if (solveKTUtil(0, 0, 1, sol, xMove, yMove) == false) {
-    printf("Solution does not exist");
+    if (solveKTUtil(source.x_pos / 85, source.y_pos / 85, 1, sol, xMove, yMove) == false) {
+    console.log("Solution does not exist");
     return false;
 }
 else
@@ -114,11 +110,12 @@ return true;
 
 /* A recursive utility function to solve Knight Tour 
    problem */
-int solveKTUtil(int x, int y, int movei, int sol[N][N],
-    int xMove[N], int yMove[N])
+function solveKTUtil(x, y,  movei,  sol,xMove, yMove)
 {
-    int k, next_x, next_y;
-    if (movei == N * N)
+    var k;
+    var next_x;
+    var next_y;
+    if (movei == sink)
         return true;
 
     /* Try all next moves from the current coordinate x, y */
