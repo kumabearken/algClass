@@ -1,13 +1,3 @@
-let knightsBoard = [
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0]
-];
 let knightsBoards = [
     [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
     [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
@@ -21,11 +11,8 @@ let knightsBoards = [
     [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 ];
 
-var moveList = [[1, 2], [-1, 2], [1, -2], [-1, -2], [2, 1], [-2, 1], [2, -1], [-2, -1]];
-var moves = [];
-
-var cx = [[ 1, 1, 2, 2, -1, -1, -2, -2]];
-var cy = [[ 2,-2, 1,-1,  2, -2,  1, -1]]; 
+var cx = [ 1, 1, 2, 2, -1, -1, -2, -2];
+var cy = [ 2,-2, 1,-1,  2, -2,  1, -1]; 
 
 //creates the grid sizes 
 var grid_x_space = 85;
@@ -34,6 +21,8 @@ var grid_x = 10;
 var grid_N = 10;
 var grid_y = 10;
 //console.log(grid_x_space, grid_y_space, grid_x, grid_y);
+
+var maxFlow = 100000;
 
 //creats a list of nodes which store the random value with their x and y position in the grid
 var nodelist = [];
@@ -68,13 +57,48 @@ function isSafe( x,  y, sol)
 }
 
 /* A utility function to print solution matrix sol[N][N] */
-function printSolution(sol)
+function printSolution(pstx)
 {
-    for (var x = 0; x < grid_N; x++)
-    {
-        for (var y = 0; y < grid_N; y++)
-            console.log( sol[x][y]);
+    var nowX;
+    var nowY;
+    var nextX;
+    var nextY;
+    var sol = knightsBoards;
+    //tells sqare nmber and path debugging purpose
+    for (var y = 0; y < grid_N; y++) {
+        for (var x = 0; x < grid_N; x++) {
+            console.log(sol[x][y]);
+            var z = x + (y * 10);
+            console.log("square " + z); 
+        }
     }
+    // look for path
+    for (var i = 0; i < 100; ++i) {
+
+        for (var y = 0; y < grid_N; y++) {
+            for (var x = 0; x < grid_N; x++) {
+                if (sol[x][y] == i) {
+                    nowX = x;
+                    nowY = y;
+                }
+            }
+        }
+        for (var y = 0; y < grid_N; y++) {
+            for (var x = 0; x < grid_N; x++) {
+                //console.log(sol[x][y])
+                if (sol[x][y] == (i + 1)) {
+                    nextX = x;
+                    nextY = y;
+                }
+            }
+        }
+        // draw lines
+        pstx.beginPath();
+        pstx.moveTo(nowX * 85 + 43, nowY * 85 + 43);
+        pstx.lineTo(nextX * 85 + 43, nextY * 85 + 43);
+        pstx.stroke();
+    }
+    console.log(maxFlow);
 }
 
 /* This function solves the Knight Tour problem using 
@@ -93,17 +117,21 @@ function solveKT()
        yMove[] is for next value of y coordinate */
     var xMove = cx;
     var yMove = cy;
+    var sourceX = source.x_pos / 85;
+    var sourceY = source.y_pos / 85;
+    var sinkLocation = (sink.x_pos / 85) + (sink.y_pos / 85 *10);
 // Since the Knight is initially at the first block 
-    sol[source.x_pos / 85][source.y_pos / 85] = 0;
+    sol[sourceX][sourceY] = 0;
 
 /* Start from 0,0 and explore all tours using 
    solveKTUtil() */
-    if (solveKTUtil(source.x_pos / 85, source.y_pos / 85, 1, sol, xMove, yMove) == false) {
-    console.log("Solution does not exist");
-    return false;
-}
-else
-    printSolution(sol);
+    if (solveKTUtil(sourceX, sourceY, 1, sol, xMove, yMove) == false) {
+        console.log(sinkLocation);
+        console.log("Solution does not exist");
+        return false;
+    }
+    else {}
+    //printSolution(sol);
 
 return true; 
 }
@@ -115,7 +143,12 @@ function solveKTUtil(x, y,  movei,  sol,xMove, yMove)
     var k;
     var next_x;
     var next_y;
-    if (movei == sink)
+    var x_y_loc = x + (y * 10);
+    console.log(x_y_loc);
+
+    var sinkLocation = (sink.x_pos / 85) + (sink.y_pos / 85 *10);
+    console.log(sinkLocation);
+    if (x_y_loc == sinkLocation)
         return true;
 
     /* Try all next moves from the current coordinate x, y */
@@ -125,8 +158,9 @@ function solveKTUtil(x, y,  movei,  sol,xMove, yMove)
         if (isSafe(next_x, next_y, sol)) {
             sol[next_x][next_y] = movei;
             if (solveKTUtil(next_x, next_y, movei + 1, sol,
-                xMove, yMove) == true)
+                xMove, yMove) == true) {
                 return true;
+            }
             else
                 sol[next_x][next_y] = -1;// backtracking 
         }
@@ -172,7 +206,7 @@ function assign_value_to_grid(gctx, nodel) {
 }
 //draw source and sink
 function draw_source_and_sink(gctx) {
-    console.log(source.x_pos)
+    //console.log(source.x_pos)
     gctx.fillText("Source", source.x_pos + 20, source.y_pos + 53);
     gctx.fillText("Sink", sink.x_pos + 20, sink.y_pos + 53);
 }
