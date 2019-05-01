@@ -1,3 +1,4 @@
+// board
 let knightsBoards = [
     [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
     [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
@@ -11,8 +12,9 @@ let knightsBoards = [
     [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 ];
 
-var cx = [ 1, 1, 2, 2, -1, -1, -2, -2];
-var cy = [ 2,-2, 1,-1,  2, -2,  1, -1]; 
+//moves
+var cx = [ 2, 1, 2, 1,-2,-1,-2,-1];
+var cy = [-1,-2, 1, 2, 1, 2,-1,-2];
 
 //creates the grid sizes 
 var grid_x_space = 85;
@@ -22,59 +24,94 @@ var grid_N = 10;
 var grid_y = 10;
 //console.log(grid_x_space, grid_y_space, grid_x, grid_y);
 
-var maxFlow = 100000;
-
 //creats a list of nodes which store the random value with their x and y position in the grid
+// node list is stored in this fashion
+// 1 6  11 16 21
+// 2 7  12 17 22
+// 3 8  13 18 23 
+// 4 9  14 19 24
+// 5 10 15 20 25
 var nodelist = [];
 for (var x = 0; x < 800; x += grid_x_space) {
     for (var y = 0; y < 800; y += grid_y_space) {
         // flow_val ensure the flow_value number is generated to equal or less
         var flow_val = 2 * Math.floor((Math.random() * 15) + 1);
         nodelist.push({ x_pos: x, y_pos: y, max_value: flow_val, flow_value: Math.floor((Math.random() * flow_val) + 1) });
+        //console.log(flow_val);
     }
 }
 
 //creates random start and stop positions for the knight
-var source = nodelist[Math.floor((Math.random() * 99) + 1)]
-console.log(source.x_pos / 85);
+var random = false;
+var source;
+var sink;
+if (random) {
+    source = nodelist[Math.floor((Math.random() * 99) + 1)]
+    sink = nodelist[Math.floor((Math.random() * 99) + 1)]
+}
+//creates fixed source and sink
+else {
+    source = nodelist[8];
+    sink = nodelist[73];
+}
+/*console.log(source.x_pos / 85);
 console.log(source.y_pos / 85);
-var sink = nodelist[Math.floor((Math.random() * 99) + 1)]
 console.log(sink.x_pos / 85);
-console.log(sink.y_pos / 85);
+console.log(sink.y_pos / 85);*/
+
+var maxFlow = source.flow_value;
+console.log("source is " + source.flow_value);
+console.log("sink is " + sink.flow_value)
+
+function arrayRotateOne() {
+    cx.push(cx.shift());
+    cy.push(cy.shift());
+}
+
+function arrayRotateOneRev() {
+    cx.unshift(cx.pop());
+    cy.unshift(cy.pop());
+}
+
+function arrayRotateThree() {
+    cx.push(cx.shift());
+    cy.push(cy.shift());
+    cx.push(cx.shift());
+    cy.push(cy.shift());
+    cx.push(cx.shift());
+    cy.push(cy.shift());
+}
+function arrayRotateFive() {
+    cx.push(cx.shift());
+    cy.push(cy.shift());
+    cx.push(cx.shift());
+    cy.push(cy.shift());
+    cx.push(cx.shift());
+    cy.push(cy.shift());
+    cx.push(cx.shift());
+    cy.push(cy.shift());
+    cx.push(cx.shift());
+    cy.push(cy.shift());
+}
 
 //===============================================================================================================================
-function knightsMove() {
-   
-}
-//var solveKTUtil( x,  y, movei, sol,xMove, yMove);
 
 /* A utility function to check if i,j are valid indexes 
    for N*N chessboard */
-function isSafe( x,  y, sol)
-{
+function isSafe(x, y, sol) {
     return (x >= 0 && x < grid_N && y >= 0 &&
         y < grid_N && sol[x][y] == -1);
 }
 
-/* A utility function to print solution matrix sol[N][N] */
-function printSolution(pstx)
-{
+// find the flow
+function flowIs() {
+
     var nowX;
     var nowY;
-    var nextX;
-    var nextY;
     var sol = knightsBoards;
-    //tells sqare nmber and path debugging purpose
-    for (var y = 0; y < grid_N; y++) {
-        for (var x = 0; x < grid_N; x++) {
-            console.log(sol[x][y]);
-            var z = x + (y * 10);
-            console.log("square " + z); 
-        }
-    }
-    // look for path
-    for (var i = 0; i < 100; ++i) {
+    var flow = maxFlow;
 
+    for (var i = 0; i < 100; ++i) {
         for (var y = 0; y < grid_N; y++) {
             for (var x = 0; x < grid_N; x++) {
                 if (sol[x][y] == i) {
@@ -83,6 +120,51 @@ function printSolution(pstx)
                 }
             }
         }
+        var z = nowX * 10 + nowY;
+        var temp = nodelist[z];
+        if (temp.flow_value < flow)
+            flow = temp.flow_value;
+    }
+    console.log("flow is " + flow);
+    return flow;
+}
+
+//reset board
+function reset() {
+    for (var y = 0; y < grid_N; y++) {
+        for (var x = 0; x < grid_N; x++) {
+            knightsBoards[x][y] = -1;
+        }
+    }
+}
+
+/* A utility function to print solution graph */
+function printSolution(pstx) {
+    var nowX;
+    var nowY;
+    var nextX;
+    var nextY;
+    var sol = knightsBoards;
+    //tells square number and path debugging purpose
+    for (var y = 0; y < grid_N; y++) {
+        for (var x = 0; x < grid_N; x++) {
+            var z = x + (y * 10);
+            //console.log(sol[x][y]);
+            //console.log("square " + z);
+        }
+    }
+    // look for path
+    for (var i = 0; i < 100; ++i) {
+        //current point
+        for (var y = 0; y < grid_N; y++) {
+            for (var x = 0; x < grid_N; x++) {
+                if (sol[x][y] == i) {
+                    nowX = x;
+                    nowY = y;
+                }
+            }
+        }
+        //next point
         for (var y = 0; y < grid_N; y++) {
             for (var x = 0; x < grid_N; x++) {
                 //console.log(sol[x][y])
@@ -98,18 +180,42 @@ function printSolution(pstx)
         pstx.lineTo(nextX * 85 + 43, nextY * 85 + 43);
         pstx.stroke();
     }
-    console.log(maxFlow);
 }
-
-/* This function solves the Knight Tour problem using 
-   Backtracking.  This function mainly uses solveKTUtil() 
-   to solve the problem. It returns false if no complete 
-   tour is possible, otherwise return true and prints the 
-   tour. 
-   Please note that there may be more than one solutions, 
-   this function prints one of the feasible solutions.  */
-function solveKT()
-{
+function optimize() {
+    var nowX;
+    var nowY;
+    var nextX;
+    var nextY;
+    var sol = knightsBoards;
+    
+    // look for path
+    for (var i = 0; i < 100; ++i) {
+        //current point
+        for (var y = 0; y < grid_N; y++) {
+            for (var x = 0; x < grid_N; x++) {
+                if (sol[x][y] == i) {
+                    nowX = x;
+                    nowY = y;
+                }
+            }
+        }
+        //next point
+        for (var y = 0; y < grid_N; y++) {
+            for (var x = 0; x < grid_N; x++) {
+                //console.log(sol[x][y])
+                if (sol[x][y] == (i + 1)) {
+                    nextX = x;
+                    nextY = y;
+                }
+            }
+        }
+        sourceX = x;
+        sourceY = y;
+    }
+}
+/*  
+*/
+function solvePath() {
     var sol = knightsBoards;
 
     /* xMove[] and yMove[] define next move of Knight. 
@@ -119,38 +225,34 @@ function solveKT()
     var yMove = cy;
     var sourceX = source.x_pos / 85;
     var sourceY = source.y_pos / 85;
-    var sinkLocation = (sink.x_pos / 85) + (sink.y_pos / 85 *10);
-// Since the Knight is initially at the first block 
+    var sinkLocation = (sink.x_pos / 85) + (sink.y_pos / 85 * 10);
+
+    // set current
     sol[sourceX][sourceY] = 0;
 
-/* Start from 0,0 and explore all tours using 
-   solveKTUtil() */
+    /* recursion  */
     if (solveKTUtil(sourceX, sourceY, 1, sol, xMove, yMove) == false) {
         console.log(sinkLocation);
         console.log("Solution does not exist");
         return false;
     }
-    else {}
+    else { }
     //printSolution(sol);
 
-return true; 
+    return true;
 }
 
-/* A recursive utility function to solve Knight Tour 
-   problem */
-function solveKTUtil(x, y,  movei,  sol,xMove, yMove)
-{
+/* A recursive utility function to solve problem */
+function solveKTUtil(x, y, movei, sol, xMove, yMove) {
     var k;
     var next_x;
     var next_y;
     var x_y_loc = x + (y * 10);
-    console.log(x_y_loc);
-
-    var sinkLocation = (sink.x_pos / 85) + (sink.y_pos / 85 *10);
-    console.log(sinkLocation);
+    var sinkLocation = (sink.x_pos / 85) + (sink.y_pos / 85 * 10);
+    //console.log(sinkLocation);
+    //console.log(x_y_loc);
     if (x_y_loc == sinkLocation)
         return true;
-
     /* Try all next moves from the current coordinate x, y */
     for (k = 0; k < 8; k++) {
         next_x = x + xMove[k];
@@ -167,7 +269,7 @@ function solveKTUtil(x, y,  movei,  sol,xMove, yMove)
     }
 
     return false;
-} 
+}
 
 //======================================================================================================================================
 // =====================================================  draw_grid ====
@@ -207,8 +309,10 @@ function assign_value_to_grid(gctx, nodel) {
 //draw source and sink
 function draw_source_and_sink(gctx) {
     //console.log(source.x_pos)
-    gctx.fillText("Source", source.x_pos + 20, source.y_pos + 53);
-    gctx.fillText("Sink", sink.x_pos + 20, sink.y_pos + 53);
+    var string1 = ("Source");
+    var string2 = ("Sink");
+    gctx.fillText(string1, source.x_pos + 20, source.y_pos + 53);
+    gctx.fillText(string2, sink.x_pos + 20, sink.y_pos + 53);
 }
 
 //====================================================== draw box
