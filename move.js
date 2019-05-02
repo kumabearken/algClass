@@ -13,109 +13,9 @@ let knightsBoards = [
 ];
 
 //moves
-var cx = [ 2, 1, 2, 1,-2,-1,-2,-1];
-var cy = [-1,-2, 1, 2, 1, 2,-1,-2];
-//======================================================================
-function PathFinder() {
-    var UP_LEFT = [-1, -2];
-    var UP_RIGHT = [1, -2];
-    var LEFT_UP = [-2, -1];
-    var LEFT_DOWN = [-2, 1];
-    var DOWN_LEFT = [-1, 2];
-    var DOWN_RIGHT = [1, 2];
-    var RIGHT_UP = [2, -1];
-    var RIGHT_DOWN = [2, 1];
+var cx = [2, 1, 2, 1, -2, -1, -2, -1];
+var cy = [-1, -2, 1, 2, 1, 2, -1, -2];
 
-    var Directions = [UP_LEFT, UP_RIGHT, LEFT_UP, LEFT_DOWN, DOWN_LEFT, DOWN_RIGHT, RIGHT_UP, RIGHT_DOWN];
-
-    var edge_pile_start = Math.floor((Math.random() * 15) + 15);
-    edge_pile -= 6;
-
-    var start_path;
-    start_path[0] = [21, 42];
-    start_path[1] = [42, 34];
-    start_path[2] = [34, 55];
-    start_path[3] = [55, 74];
-    start_path[4] = [74, 86];
-    start_path[5] = [86, 78];
-    
-    var vertices = [21, 42, 34, 55, 74, 86, 78];
-    edges = start_path;
-
-    knightsBoards[1][2] = 0;
-    knightsBoards[2][4] = 1;
-    knightsBoards[4][3] = 2;
-    knightsBoards[5][5] = 3;
-    knightsBoards[4][7] = 4;
-    knightsBoards[6][8] = 5;
-    knightsBoards[8][7] = 6;
-
-    while (edge_pile > 1) {
-        var current_highest = 0;
-        var start = -1;
-        var highest_target = -1;
-        var highest_return = -1;
-        for (var i = 0; i < Object.size(start_path); ++i) {
-            this_y = start_path[i][0] / 10;
-            this_x = start_path[i][0] % 10;
-            var targets;
-            for (var int j = 0; j < Object.size(Directions); ++j) {
-                var target_vertex_y = this_y + Directions[j][1];
-                if ((target_vertex_y > 9) || (target_vertex_y < 0)) {
-                }
-                else {
-                    break;
-                }
-                var target_vertex_x = this_x + Directions[j][0];
-                if ((target_vertex_y > 9) || (target_vertex_y < 0)) {
-                }
-                else {
-                    break;
-                }
-                var target_vertex = (target_vertex_y * 10) + target_vertex_x;
-                var shouldBreak = true;
-                for (var k = 0; k < 7; ++k) {
-                    if (target_vertex == vertices[k])
-                        shouldBreak = false;
-                }
-                if (shouldBreak)
-                    break;
-                targets.push(target_vertex);
-            }
-            for (var i = 0; i < Object.size(targets); ++i) {
-                var target_y = targets[i] / 10;
-                var target_x = targets[i] % 10;
-                for (var j = 0; j < Object.size(Directions); ++j) {
-                    var return_vertex_y = target_y + Directions[j][1];
-                    if ((return_vertex_y > 9) || (return_vertex_y < 0)) {
-                    }
-                    else {
-                        break;
-                    }
-                    var return_vertex_x = target_x + Directions[j][0];
-                    if ((return_vertex_x > 9) || (return_vertex_x < 0)) {
-                    }
-                    else {
-                        break;
-                    }
-                    var return_vertex = (return_vertex_y * 10) + return_vertex_x
-                }
-            }
-        }
-    }
-}
-
-Object.size = function (obj) {
-    var size = 0, key;
-    for (key in obj) {
-        if (obj.hasOwnProperty(key)) size++;
-    }
-    return size;
-};
-
-// Get the size of an object
-// var size = Object.size(myArray);
-//======================================================================
 
 
 //creates the grid sizes 
@@ -153,8 +53,8 @@ if (random) {
 }
 //creates fixed source and sink
 else {
-    source = nodelist[8];
-    sink = nodelist[73];
+    source = nodelist[12];
+    sink = nodelist[87];
 }
 /*console.log(source.x_pos / 85);
 console.log(source.y_pos / 85);
@@ -424,3 +324,181 @@ function draw_box(ctx) //, stroke, fill )
         }
     }
 }
+//======================================================================
+var UP_LEFT = [-1, -2];
+var UP_RIGHT = [1, -2];
+var LEFT_UP = [-2, -1];
+var LEFT_DOWN = [-2, 1];
+var DOWN_LEFT = [-1, 2];
+var DOWN_RIGHT = [1, 2];
+var RIGHT_UP = [2, -1];
+var RIGHT_DOWN = [2, 1];
+
+var Directions = [UP_LEFT, UP_RIGHT, LEFT_UP, LEFT_DOWN, DOWN_LEFT, DOWN_RIGHT, RIGHT_UP, RIGHT_DOWN];
+
+var edge_pile_start = Math.floor((Math.random() * 15) + 15);
+var edge_pile = edge_pile_start - 6;
+
+var start_path = [[21, 42], [42, 34], [34, 55], [55, 74], [74, 86], [86, 78]];
+
+var vertices = [21, 42, 34, 55, 74, 86, 78];
+var edges = start_path;
+
+/*
+knightsBoards[1][2] = 0;
+knightsBoards[2][4] = 1;
+knightsBoards[4][3] = 2;
+knightsBoards[5][5] = 3;
+knightsBoards[4][7] = 4;
+knightsBoards[6][8] = 5;
+knightsBoards[8][7] = 6;
+*/
+var debug = true;
+var debugCount = 1;
+function PathFinder() {
+    while (edge_pile > 1) {
+
+        var current_highest = 0;
+        var start = -1;
+        var highest_target = -1;
+        var highest_return = -1;
+        if (debug) {
+            console.log("On round " + debugCount);
+            console.log(" ");
+            ++debugCount;
+        }
+        for (var i = 0; i < Object.size(edges); ++i) {
+            if (debug) {
+                console.log(" ");
+                console.log("size is " + Object.size(edges));
+                console.log("edges are " + edges[i][0] + " and " + edges[i][1]);                
+            }
+            this_y = Math.floor(start_path[i][0] / 10);
+            this_x = start_path[i][0] % 10;
+
+            var targets;
+            if (debug)
+                console.log("The targets are " + this_x + " and " + this_y);
+
+            for (var j = 0; j < Object.size(Directions); ++j) {
+
+                var target_vertex_y = this_y + Directions[j][1];
+
+                if ((target_vertex_y > 9) || (target_vertex_y < 0)) {
+                }
+                else {
+                    break;
+                }
+
+                var target_vertex_x = this_x + Directions[j][0];
+
+                if ((target_vertex_y > 9) || (target_vertex_y < 0)) {
+                }
+                else {
+                    break;
+                }
+
+                var target_vertex = (target_vertex_y * 10) + target_vertex_x;
+                var shouldBreak = true;
+
+                for (var k = 0; k < Object.size(vertices); ++k) {
+                    if (target_vertex == vertices[k])
+                        shouldBreak = false;
+                }
+
+                if (shouldBreak)
+                    break;
+
+                targets.push(target_vertex);
+            }
+            for (var j = 0; j < Object.size(targets); ++j) {
+
+                var target_y = targets[j] / 10;
+                var target_x = targets[j] % 10;
+
+                for (var k = 0; k < Object.size(Directions); ++k) {
+
+                    var return_vertex_y = target_y + Directions[k][1];
+
+                    if ((return_vertex_y > 9) || (return_vertex_y < 0)) {
+                    }
+                    else {
+                        break;
+                    }
+
+                    var return_vertex_x = target_x + Directions[k][0];
+
+                    if ((return_vertex_x > 9) || (return_vertex_x < 0)) {
+                    }
+                    else {
+                        break;
+                    }
+
+                    var return_vertex = (return_vertex_y * 10) + return_vertex_x;
+                    var shouldBreak = false;
+
+                    for (var l = 0; l < Object.size(vertices); ++l) {
+                        if ((vertices[l] == return_vertex) || (vertices[l] == start_path[i][0]))
+                            shouldBreak = true;
+                    }
+
+                    if (shouldBreak)
+                        break;
+
+                    max_flow = findFlow(return_vertex_x, return_vertex_y, target_vertex_x, target_vertex_y);
+
+                    if (max_flow > current_highest) {
+                        current_highest = max_flow;
+                        highest_target = target_vertex;
+                        highest_return = return_vertex;
+                        start = start_path[i][0];
+                    }
+                }
+            }
+        }
+        if (current_highest > 0) {
+            edges.push([start, highest_target], [highest_target, highest_return]);
+            vertices.push(highest_target);
+        }
+        edge_pile -= 2;
+    }
+}
+
+Object.size = function (obj) {
+    var size = 0, key;
+
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+
+function findFlow(nowX, nowY, nextX, nextY) {
+    var a = nowX * 10 + nowY;
+    var b = nextX * 10 + nextY;
+    var temp = nodelist[a];
+    var temp2 = nodelist[b];
+    console.log(temp.flow_value + temp2.flow_value)
+    if (temp.flow_value > temp2.flow_value)
+        return temp.flow_value;
+    else
+        return temp2.flow_value;
+    return;
+}
+
+function printGraph(pstx) {
+
+    for (var i = 0; i < Object.size(vertices) - 1; ++i) {
+        var nowX = Math.floor(vertices[i] % 10);
+        var nowY = Math.floor(vertices[i] / 10);
+        var nextX = Math.floor(vertices[i + 1] % 10);
+        var nextY = Math.floor(vertices[i + 1] / 10);
+        pstx.beginPath();
+        pstx.moveTo(nowX * 85 + 43, nowY * 85 + 43);
+        pstx.lineTo(nextX * 85 + 43, nextY * 85 + 43);
+        pstx.stroke();
+    }
+}
+// Get the size of an object
+// var size = Object.size(myArray);
+//======================================================================
