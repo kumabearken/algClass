@@ -76,8 +76,18 @@
             printSolution(insertcontext);
         }
         */
-        PathFinder(insertcontext);
-        printGraph(insertcontext);
+        var v1 = false;
+        var v2 = true;
+        if (v1) {
+            prep();
+            path();
+            printGraph(insertcontext);
+            showVertices();
+        }
+        if (v2) {
+            PathFinder();
+            printGraph(insertcontext)
+        }
     </script>
 </body>
 </html>
