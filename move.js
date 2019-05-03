@@ -342,7 +342,8 @@ var edge_pile = edge_pile_start - 6;
 var start_path = [[21, 42], [42, 34], [34, 55], [55, 74], [74, 86], [86, 78]];
 
 var vertices = [21, 42, 34, 55, 74, 86, 78];
-var edges = start_path;
+var edges = [];
+edges =start_path;
 
 /*
 knightsBoards[1][2] = 0;
@@ -371,49 +372,44 @@ function PathFinder() {
             if (debug) {
                 console.log(" ");
                 console.log("size is " + Object.size(edges));
-                console.log("edges are " + edges[i][0] + " and " + edges[i][1]);                
+                console.log("edges are " + edges[i][0] + " and " + edges[i][1]);
             }
-            this_y = Math.floor(start_path[i][0] / 10);
-            this_x = start_path[i][0] % 10;
+            this_y = Math.floor(edges[i][0] / 10);
+            this_x = edges[i][0] % 10;
 
-            var targets;
-            if (debug)
+            var targets = new Array();
+            if (debug) {
                 console.log("The targets are " + this_x + " and " + this_y);
-
+            }
             for (var j = 0; j < Object.size(Directions); ++j) {
 
                 var target_vertex_y = this_y + Directions[j][1];
 
                 if ((target_vertex_y > 9) || (target_vertex_y < 0)) {
-                }
-                else {
-                    break;
+                    continue;
                 }
 
                 var target_vertex_x = this_x + Directions[j][0];
 
                 if ((target_vertex_y > 9) || (target_vertex_y < 0)) {
-                }
-                else {
-                    break;
+                    continue;
                 }
 
                 var target_vertex = (target_vertex_y * 10) + target_vertex_x;
-                var shouldBreak = true;
+                var shouldCon = false;
 
                 for (var k = 0; k < Object.size(vertices); ++k) {
                     if (target_vertex == vertices[k])
-                        shouldBreak = false;
+                        shouldCon = true;
                 }
 
-                if (shouldBreak)
-                    break;
-
+                if (shouldCon)
+                    continue;
                 targets.push(target_vertex);
             }
             for (var j = 0; j < Object.size(targets); ++j) {
 
-                var target_y = targets[j] / 10;
+                var target_y = Math.floor(targets[j] / 10);
                 var target_x = targets[j] % 10;
 
                 for (var k = 0; k < Object.size(Directions); ++k) {
@@ -421,47 +417,59 @@ function PathFinder() {
                     var return_vertex_y = target_y + Directions[k][1];
 
                     if ((return_vertex_y > 9) || (return_vertex_y < 0)) {
-                    }
-                    else {
-                        break;
+                        continue;
                     }
 
                     var return_vertex_x = target_x + Directions[k][0];
 
                     if ((return_vertex_x > 9) || (return_vertex_x < 0)) {
+                        continue;
                     }
-                    else {
-                        break;
-                    }
-
+                    
                     var return_vertex = (return_vertex_y * 10) + return_vertex_x;
-                    var shouldBreak = false;
+                    var shouldBreak = true;
+
+                    if (debug) {
+                        console.log("vertice size is " + Object.size(vertices));
+                    }
 
                     for (var l = 0; l < Object.size(vertices); ++l) {
-                        if ((vertices[l] == return_vertex) || (vertices[l] == start_path[i][0]))
-                            shouldBreak = true;
+                        if (vertices[l] != return_vertex)
+                            shouldBreak = false;
                     }
-
                     if (shouldBreak)
-                        break;
-
+                        continue;
+                    if (return_vertex == edges[i][0])
+                        continue;
+                    if (debug) {
+                        console.log("Candidate pairs: Left is " + edges[i][0] + " and right is " + target_vertex + " or " + return_vertex);
+                    }
+                    console.log(return_vertex_x + " " + return_vertex_y + " " + target_vertex_x + " " + target_vertex_y)
                     max_flow = findFlow(return_vertex_x, return_vertex_y, target_vertex_x, target_vertex_y);
 
                     if (max_flow > current_highest) {
                         current_highest = max_flow;
                         highest_target = target_vertex;
                         highest_return = return_vertex;
-                        start = start_path[i][0];
+                        start = edges[i][0];
+                    }
+                    if (debug) {
+                        console.log("Best edge is: Flow( " + current_highest + " ) Start (" + start + ") Target(" + highest_target + ") Return(" + highest_return + ")");
                     }
                 }
             }
         }
         if (current_highest > 0) {
-            edges.push([start, highest_target], [highest_target, highest_return]);
+            if (debug) {
+                console.log("ADDING EDGE PAIRS: " + "(" + start + "," + highest_target + ") and (" + highest_target + "," + highest_return + ")");
+            }
+            edges.push([start, highest_target]);
+            edges.push([highest_target, highest_return]);
             vertices.push(highest_target);
         }
         edge_pile -= 2;
     }
+    showVertices();
 }
 
 Object.size = function (obj) {
@@ -476,9 +484,11 @@ Object.size = function (obj) {
 function findFlow(nowX, nowY, nextX, nextY) {
     var a = nowX * 10 + nowY;
     var b = nextX * 10 + nextY;
-    var temp = nodelist[a];
-    var temp2 = nodelist[b];
-    console.log(temp.flow_value + temp2.flow_value)
+    var temp;
+    temp = nodelist[a];
+    var temp2;
+    temp2 = nodelist[b];
+    console.log(temp.flow_value + " " + temp2.flow_value)
     if (temp.flow_value > temp2.flow_value)
         return temp.flow_value;
     else
@@ -499,6 +509,16 @@ function printGraph(pstx) {
         pstx.stroke();
     }
 }
+
+function showVertices() {
+    for (var i = 0; i<Object.size(edges); ++i) {
+        console.log("edge is " + edges[i][0] + " " + edges[i][1]);
+        console.log("vertice is " + vertices[i]);
+        console.log(i);
+    }
+    console.log(i)
+}
+
 // Get the size of an object
 // var size = Object.size(myArray);
 //======================================================================
